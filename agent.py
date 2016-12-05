@@ -4,6 +4,7 @@ import random
 import numpy as np
 import glob
 import re
+import os
 from collections import deque
 
 # Network parameters
@@ -23,6 +24,7 @@ TARGET_UPDATE_INTERVAL = 10000  # The frequency with which the target network is
 GAMMA = 0.99  # Discount factor
 TRAIN_INTERVAL = 4  # The agent selects 4 actions between successive updates
 SAVING_INTERVAL = 10000
+MODELS_PATH = 'models/'
 
 class Agent():
     def __init__(self, env_name, num_actions):
@@ -55,9 +57,12 @@ class Agent():
         self.session = tf.Session()
         self.session.run(tf.initialize_all_variables())
 
+        if not os.path.exists(MODELS_PATH+self.env_name):
+            os.makedirs(MODELS_PATH+self.env_name)
+
     def select_action(self, state):
         self.t += 1
-        self.last_action_state = state
+        self.last_action_state = np.array(state)
 
         if self.epsilon >= random.random() or self.t < INITIAL_REPLAY_SIZE:
             action = random.randrange(self.num_actions)
@@ -81,7 +86,7 @@ class Agent():
         return action
 
     def set(self, state, action, reward, episode_end):
-        self.replay_memory.append((self.last_action_state, state, action, reward, episode_end))
+        self.replay_memory.append((self.last_action_state, np.array(state), action, reward, episode_end))
         if len(self.replay_memory) > NUM_REPLAY_MEMORY:
             self.replay_memory.popleft()
 
@@ -109,17 +114,17 @@ class Agent():
             self.train_action_ps: action_batch
         })
 
-        #if self.train_count % SAVING_INTERVAL == 0:
-        print('Saving Network...')
-        self.train_network.save_parameters(self.session, self.env_name+'/model', self.train_count)
-        self.train_count += 1
+        if self.train_count % SAVING_INTERVAL == 0:
+            print('Saving Network...')
+            self.train_network.save_parameters(self.session, MODELS_PATH+self.env_name+'/model', self.train_count)
+            self.train_count += 1
 
     def update_network(self):
         self.train_network.copy_network_to(self.target_network, self.session)
 
     def restore_network(self):
         files = {}
-        for model in glob.glob(self.env_name+'/*'):
+        for model in glob.glob(MODELS_PATH+self.env_name+'/*'):
             step = re.search(r'\d+$', model)
             if step is not None:
                 files[int(step.group())] = model

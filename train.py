@@ -1,15 +1,11 @@
 import parser
 from agent import Agent
 from enviroment import Enviroment
-import os
 
 NUM_EPISODES = 100
-MODELS_PATH = 'models/'
 
 def main():
     args = parser.parse()
-    if not os.path.exists(MODELS_PATH+args.environment):
-        os.makedirs(MODELS_PATH+args.environment)
 
     env = Enviroment(args.environment, args.display)
     agent = Agent(env_name=args.environment, num_actions=env.gym_env.action_space.n)
