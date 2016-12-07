@@ -1,6 +1,6 @@
 import tensorflow as tf
 
-class DeepQNetwork:
+class DeepQNetwork(object):
     def __init__(self, image_width, image_height, num_channels, num_actions, name):
         # network variables
         # conv1

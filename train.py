@@ -2,7 +2,7 @@ import parser
 from agent import Agent
 from enviroment import Enviroment
 
-NUM_EPISODES = 100
+NUM_EPISODES = 10000
 
 def main():
     args = parser.parse()
