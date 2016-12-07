@@ -3,7 +3,6 @@ import random
 import numpy as np
 from skimage.color import rgb2gray
 from skimage.transform import resize
-from matplotlib import pylab as plt
 
 NUM_SKIPPING_FRAME = 4
 STATE_LENGTH = 4
