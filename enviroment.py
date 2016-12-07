@@ -4,7 +4,7 @@ import numpy as np
 from skimage.color import rgb2gray
 from skimage.transform import resize
 
-NUM_SKIPPING_FRAME = 4
+NUM_SKIPPING_FRAME = 1
 STATE_LENGTH = 4
 NO_OP_STEPS = 30
 IMAGE_WIDTH = 84

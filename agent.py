@@ -12,6 +12,7 @@ BATCH_SIZE = 32
 IMAGE_WIDTH = 84
 IMAGE_HEIGHT = 84
 NUM_CHANNELS = 4  # dqn inputs 4 image at same time as state
+INITIAL_LEARNING_RATE = 0.0025
 LEARNING_RATE = 0.00025  # Learning rate used by RMSProp
 MOMENTUM = 0.95  # Momentum used by RMSProp
 MIN_GRAD = 0.01  # Constant added to the squared gradient in the denominator of the RMSProp update
@@ -55,12 +56,7 @@ class Agent(object):
         self.loss = self.train_network.clipped_loss(self.train_state_ps, reward_one_hot, action_one_hot)
         self.learning_rate_step_ps = tf.placeholder('int64', None)
         self.learning_rate_op = tf.maximum(LEARNING_RATE,
-            tf.train.exponential_decay(
-                LEARNING_RATE,
-                self.learning_rate_step_ps,
-                100000,
-                0.96,
-                staircase=True))
+            tf.train.exponential_decay(INITIAL_LEARNING_RATE, self.learning_rate_step_ps, 5000, 0.96, staircase=True))
 
         self.optimizer = tf.train.RMSPropOptimizer(self.learning_rate_op, momentum=MOMENTUM, epsilon=MIN_GRAD).minimize(self.loss)
 
@@ -132,7 +128,7 @@ class Agent(object):
                         self.total_q_max / float(self.duration),
                         self.duration,
                         self.total_loss / (float(self.duration) / float(TRAIN_INTERVAL)),
-                        self.session.run(self.learning_rate_op, feed_dict={self.learning_rate_step_ps:self.train_count}),
+                        self.learning_rate_op.eval(session=self.session, feed_dict={self.learning_rate_step_ps:self.train_count}),
                         self.epsilon]
                 for i in range(len(stats)):
                     self.session.run(self.update_ops[i], feed_dict={
@@ -140,6 +136,12 @@ class Agent(object):
                     })
                 summary_str = self.session.run(self.summary_op)
                 self.writer.add_summary(summary_str, self.episode + 1)
+
+                print('Episode:{0}, Reward:{1}, Loss:{2}, Rate:{3}, Epsilon:{4}, Q Max:{5}, Train:{6}'.format(
+                self.episode, stats[0], stats[3], stats[4], stats[5], stats[1], self.train_count))
+
+            else:
+                print('Episode:{0}, Reward:{1}'.format(self.episode, self.total_reward))
 
             self.total_reward = 0
             self.total_q_max = 0

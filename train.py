@@ -24,15 +24,11 @@ def main():
         for episode in range(NUM_EPISODES):
             state = env.reset()
             episode_end = False
-            total_reward = 0
 
             while not episode_end:
                 action = agent.select_action(state)
                 state, reward, episode_end = env.step(action)
                 agent.set(state, action, reward, episode_end)
-                total_reward += reward
-
-            print('episode :', episode, 'reward :', total_reward)
 
 if __name__ == '__main__':
     main()
